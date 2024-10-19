@@ -1,0 +1,76 @@
+# Node modules (if you're using Node.js in the backend)
+node_modules/
+
+# Python virtual environments (if you're using Python)
+venv/
+__pycache__/
+*.pyc
+
+# Build directories (common in many languages like Java, Python, etc.)
+build/
+dist/
+
+# Logs
+logs/
+*.log
+
+# Runtime files
+*.pid
+*.seed
+*.pid.lock
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+.envrc
+docker-compose.override.yml  # To avoid overriding sensitive settings
+
+# Postgres container files
+pgdata/
+pg_dump/
+
+# Docker
+docker-compose.override.yml  # Override configurations for local development
+docker-compose.yml  # If you use different docker-compose files for local and production
+docker-compose.*
+.docker/
+.dockerignore
+
+# Volumes and database data
+volumes/
+db_data/
+
+# OS-generated files and directories
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE and editor-specific files
+.vscode/
+.idea/
+*.swp
+*.swo
+*.swn
+
+# System-specific files (like MacOS or Linux)
+.Trash-*
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+
+# Cache and debugging files
+.cache/
+coverage/
+*.cover
+
+# Package manager lockfiles (if not versioned)
+package-lock.json
+yarn.lock
+pipfile.lock
+poetry.lock
+
+# Git metadata
+.git/
