@@ -16,7 +16,9 @@ const Landing = () => {
         <div className="introduction">
           <div className="header">Ret<span className="gradient-text-animate">ai</span>n More, <br /> Achieve More</div>
           <div className="text"> Your personalized lecturer: Tailored to guide you through the most critical concepts, <br></br>making learning faster and more engaging. </div>
-          <button> Try Retain </button>
+          <Link to="/login">
+            <button>Try Retain</button>
+          </Link>
         </div>
       </body>
     );
