@@ -9,9 +9,9 @@ import Header from './components/Header'
 function App() {
   return (
     <Router>
-      <Header>
+      {/* <Header>
 
-      </Header>
+      </Header> */}
       <div className="App">
         <Routes>
           {/* Route for the Landing Page */}
