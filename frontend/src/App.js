@@ -7,19 +7,21 @@ import Landing from './pages/Landing';
 import Header from './components/Header'
 import Signup from './pages/Signup';
 import Login from './pages/Login';
+import Lecture from './pages/Lecture';
+import Home from './pages/Home'; 
+import Article from './pages/Article';
 
 function App() {
   return (
     <Router>
-      {/* <Header>
-
-      </Header> */}
       <div className="App">
         <Routes>
-          {/* Route for the Landing Page */}
           <Route path="/" element={<Landing />} />
           <Route path="/Signup" element={<Signup />} />
           <Route path="/Login" element={<Login />} />
+          <Route path="/Lecture" element={<Lecture />} />
+          <Route path="/Home" element={<Home />} />
+          <Route path="/Article" element={<Article />} />
         </Routes>
       </div>
     </Router>
