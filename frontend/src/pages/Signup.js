@@ -27,7 +27,7 @@ const Signup = () => {
     }, [navigate]);
 
     const handleSubmit = async (e) => {
-        // e.preventDefault();
+        e.preventDefault();
 
         // Check if passwords match
         if (password !== confirmPassword) {
@@ -44,7 +44,7 @@ const Signup = () => {
                 body: JSON.stringify({
                     first_name: firstName,
                     last_name: lastName,
-                    email, 
+                    email,
                     password: password,
                 }),
             });
@@ -54,10 +54,14 @@ const Signup = () => {
             }
 
             const data = await response.json(); // Get response data
-            // const { email: responseEmail } = data; // Extract user email from the response
+
+            // Check if the response has the email field
+            if (!data.email) {
+                throw new Error('Invalid response from the server');
+            }
 
             // Store email in localStorage
-            localStorage.setItem('current_user_email', data.email); 
+            localStorage.setItem('current_user_email', data.email);
             navigate('/home'); // Redirect to home page
         } catch (error) {
             console.error('Signup failed:', error);
