@@ -3,6 +3,8 @@ const cors = require('cors');
 const { Pool } = require('pg');
 const bcrypt = require('bcrypt');
 const multer = require('multer');
+const AWS = require('aws-sdk');
+const fs = require('fs');
 require('dotenv').config();
 
 const app = express();
@@ -20,6 +22,15 @@ const pool = new Pool({
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+// AWS Configuration
+AWS.config.update({
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID,      
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY, 
+  region: process.env.AWS_REGION,                
+});
+
+const s3 = new AWS.S3(); //AWS S3 Bucket
 
 //Multer Middleware for file uploads
 // Set up storage for multer
@@ -160,21 +171,44 @@ app.post('/create-lecture', upload.single('file'), async (req, res) => {
   }
 
   try {
-    // If you plan to upload the file to AWS S3, you can do it here
-    // For now, let's assume you store the file path in aws_folder_link
+    // Read the file from the local filesystem
+    const fileContent = fs.readFileSync(file.path);
 
-    // Get the file path or URL, get local file path for now
-    const aws_folder_link = file.path; // Or the S3 URL if uploaded to S3
+    // Set up S3 upload parameters
+    const params = {
+      Bucket: 'calhacks24-retain',
+      Key: `lectures/${Date.now()}_${file.originalname}`, // File name to save as in S3
+      Body: fileContent,
+      ContentType: file.mimetype,
+    };
 
-    // Insert new lecture into the lectures table
-    const newLecture = await pool.query(
-      'INSERT INTO lectures (course_id, aws_folder_link, lecture_name, prompt, transcript) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-      [course_id, aws_folder_link, lecture_name, prompt, ''] // Assuming transcript is empty for now
-    );
+    // Uploading files to S3
+    s3.upload(params, async (err, data) => {
+      if (err) {
+        console.error('Error uploading to S3:', err);
+        return res.status(500).json({ message: 'Failed to upload file to S3' });
+      } else {
+        console.log('File uploaded successfully to S3:', data.Location); //when the file is uploaded to the S3 bucket, AWS S3 responds with a data object that includes several details about the file, including its location (URL).
 
-    res.status(201).json(newLecture.rows[0]);
+        // Delete the local file after uploading to S3
+        fs.unlinkSync(file.path);
+
+        // Insert new lecture data into the lectures table
+        try {
+          const newLecture = await pool.query(
+            'INSERT INTO lectures (course_id, aws_folder_link, lecture_name, prompt, transcript) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+            [course_id, data.Location, lecture_name, prompt, ''] // Use S3 URL as aws_folder_link
+          );
+
+          res.status(201).json(newLecture.rows[0]);
+        } catch (error) {
+          console.error('Error creating lecture:', error);
+          res.status(500).json({ message: 'Server error. Please try again later.' });
+        }
+      }
+    });
   } catch (error) {
-    console.error('Error creating lecture:', error);
+    console.error('Error processing file:', error);
     res.status(500).json({ message: 'Server error. Please try again later.' });
   }
 });
