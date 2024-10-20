@@ -23,11 +23,31 @@ app.use(express.json());
 // Create users table if it does not exist
 const createUsersTable = async () => {
     const query = `
+      -- create users table: 
       CREATE TABLE IF NOT EXISTS users (
           first_name VARCHAR(100) NOT NULL,
           last_name VARCHAR(100) NOT NULL,
           email VARCHAR(100) PRIMARY KEY,  -- Set email as the primary key
           password VARCHAR(255) NOT NULL
+      );
+
+      -- create courses table: 
+      CREATE TABLE IF NOT EXISTS courses (
+          course_id SERIAL PRIMARY KEY,
+          email VARCHAR(100) REFERENCES users(email) ON DELETE CASCADE,
+          created_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          course_name VARCHAR(255) NOT NULL
+      );
+
+      -- create lectures table: 
+      CREATE TABLE IF NOT EXISTS lectures (
+        lecture_id SERIAL PRIMARY KEY,
+        course_id INT REFERENCES courses(course_id) ON DELETE CASCADE,
+        created_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        aws_folder_link TEXT,
+        lecture_name VARCHAR(255) NOT NULL,
+        prompt TEXT,
+        transcript TEXT
       );
     `;
   
@@ -93,6 +113,53 @@ app.post('/login', async (req, res) => {
   } catch (err) {
     console.error('Error executing query', err);
     res.status(500).send('Error logging in');
+  }
+});
+
+// Create Course Route
+app.post('/create-course', async (req, res) => {
+  const { email, course_name } = req.body;
+
+  try {
+    // Insert new course into the courses table
+    const newCourse = await pool.query(
+      'INSERT INTO courses (email, course_name) VALUES ($1, $2) RETURNING *',
+      [email, course_name]
+    );
+    res.status(201).json(newCourse.rows[0]);
+  } catch (error) {
+    console.error('Error creating course:', error);
+    res.status(500).json({ message: 'Server error. Please try again later.' });
+  }
+});
+
+// Create Lecture Route
+app.post('/create-lecture', async (req, res) => {
+  const { course_id, aws_folder_link, lecture_name, prompt, transcript } = req.body;
+
+  try {
+    // Insert new lecture into the lectures table
+    const newLecture = await pool.query(
+      'INSERT INTO lectures (course_id, aws_folder_link, lecture_name, prompt, transcript) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+      [course_id, aws_folder_link, lecture_name, prompt, transcript]
+    );
+    res.status(201).json(newLecture.rows[0]);
+  } catch (error) {
+    console.error('Error creating lecture:', error);
+    res.status(500).json({ message: 'Server error. Please try again later.' });
+  }
+});
+
+// Get Courses for a User
+app.get('/courses/:email', async (req, res) => {
+  const { email } = req.params;
+
+  try {
+    const courses = await pool.query('SELECT * FROM courses WHERE email = $1', [email]);
+    res.status(200).json(courses.rows);
+  } catch (error) {
+    console.error('Error fetching courses:', error);
+    res.status(500).json({ message: 'Server error. Please try again later.' });
   }
 });
 

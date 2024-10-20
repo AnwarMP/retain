@@ -10,7 +10,7 @@ const Login = () => {
 
     // Check if a user is already logged in by checking localStorage
     useEffect(() => {
-        const currentUserId = localStorage.getItem('current_user_id');
+        const currentUserId = localStorage.getItem('current_user_email');
         if (currentUserId) {
             setShowNotification(true); // Show the notification
 

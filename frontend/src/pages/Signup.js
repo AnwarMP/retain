@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
 const Signup = () => {
+    const [showNotification, setShowNotification] = useState(false); // For showing the notification
+
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
     const [email, setEmail] = useState(''); // Initialize email state
@@ -9,6 +11,20 @@ const Signup = () => {
     const [confirmPassword, setConfirmPassword] = useState('');
     const [error, setError] = useState('');
     const navigate = useNavigate();
+
+    // Check if a user is already logged in by checking localStorage
+    useEffect(() => {
+        const currentUserId = localStorage.getItem('current_user_email');
+        if (currentUserId) {
+            setShowNotification(true); // Show the notification
+
+            // Redirect after showing the notification for 2 seconds
+            setTimeout(() => {
+                setShowNotification(false);
+                navigate('/home');
+            }, 2000); // 2-second delay before redirecting
+        }
+    }, [navigate]);
 
     const handleSubmit = async (e) => {
         // e.preventDefault();
