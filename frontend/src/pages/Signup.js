@@ -35,8 +35,8 @@ const Signup = () => {
                 throw new Error('Error signing up. Please try again.');
             }
 
-            const { id } = await response.json(); // Extract user ID from the response
-            localStorage.setItem('current_user_id', id); // Store user ID in localStorage
+            const { email } = await response.json(); // Extract user email from the response
+            localStorage.setItem('current_user_email', email); // Store user email in localStorage
             navigate('/home'); // Redirect to home page
         } catch (error) {
             console.error('Signup failed:', error);

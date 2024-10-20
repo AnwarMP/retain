@@ -23,7 +23,7 @@ const Login = () => {
             }
 
             const { user } = await response.json(); // Extract user from the response
-            localStorage.setItem('current_user_id', user.id); // Store user ID in localStorage
+            localStorage.setItem('current_user_id', user.email); // Store user ID in localStorage
             navigate('/home'); // Redirect to home page
         } catch (error) {
             console.error('Login failed:', error);
