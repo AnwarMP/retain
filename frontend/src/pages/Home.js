@@ -8,13 +8,18 @@ import { useNavigate } from 'react-router-dom';
 import { IoReturnUpBack } from "react-icons/io5";
 
 const Home = () => {
+  const navigate = useNavigate();
+
+  const isLoggedIn = !!localStorage.getItem('current_user_email'); 
+  if (!isLoggedIn) {
+    navigate('/Signup'); 
+  }
+
   // State containing courses and their lectures
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [courseName, setCourseName] = useState(""); // Add state to capture course name
-
-  const navigate = useNavigate();
 
   const email = localStorage.getItem('current_user_email'); // Adjust based on how you're storing email
 

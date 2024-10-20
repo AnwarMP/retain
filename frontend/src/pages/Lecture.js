@@ -4,6 +4,7 @@ import '../Styles/Signup.css';
 import '../Styles/Universal.css';
 import Header from '../components/Header';
 import '../Styles/Lecture.css';
+import { useNavigate } from 'react-router-dom';
 
 const Lecture = () => {
   const { courseId } = useParams(); // Get the course ID from the URL
@@ -11,6 +12,13 @@ const Lecture = () => {
   const [selectedFileName, setSelectedFileName] = useState('');
   const [loading, setLoading] = useState(true);
   const [lectures, setLectures] = useState([]); // Declare state for lectures
+
+  const navigate = useNavigate(); 
+
+  const isLoggedIn = !!localStorage.getItem('current_user_email'); 
+  if (!isLoggedIn) {
+    navigate('/Signup'); 
+  }
 
   useEffect(() => {
     const email = localStorage.getItem('current_user_email'); // Get email from localStorage
