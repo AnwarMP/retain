@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import '../Styles/Signup.css';
 import '../Styles/Universal.css';
 import Header from '../components/Header';
-// import '../Styles/Courses.css'; // Create a separate CSS file for courses, similar to lecture styles
+import { useNavigate } from 'react-router-dom';
 
 const Home = () => {
   // State containing courses and their lectures
@@ -12,6 +12,8 @@ const Home = () => {
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [courseName, setCourseName] = useState(""); // Add state to capture course name
+
+  const navigate = useNavigate();
 
   const email = localStorage.getItem('current_user_email'); // Adjust based on how you're storing email
 
@@ -73,6 +75,12 @@ const Home = () => {
     return <div>Loading...</div>
   }
 
+  const handleCourseClick = (courseId) => {
+    localStorage.setItem('course_id', courseId); 
+    navigate('/Lecture');
+
+  }; 
+
   return (
     <div>
       <Header />
@@ -83,9 +91,11 @@ const Home = () => {
             <div key={index} className='bg-white shadow-lg rounded-lg p-6'>
               <h2 className='text-xl font-semibold mb-2'>{course.course_name}</h2>
               <p className='text-gray-500'>Created on: {new Date(course.created_date).toLocaleDateString()}</p>
-              <Link to={`/course/${course.course_id}`} className='text-blue-500 underline'>
+              <div 
+                onClick={() => handleCourseClick(course.course_id)}
+                className='text-blue-500 underline'>
                 View Course
-              </Link>
+              </div>
             </div>
           ))
         ) : (

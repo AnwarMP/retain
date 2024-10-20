@@ -163,6 +163,27 @@ app.get('/courses/:email', async (req, res) => {
   }
 });
 
+// Get Lectures Route
+app.get('/lectures/:email/:course_id', async (req, res) => {
+  const { email, course_id } = req.params;
+
+  try {
+    const lectures = await pool.query(
+      `SELECT lectures.* 
+       FROM lectures 
+       JOIN courses ON lectures.course_id = courses.course_id 
+       WHERE courses.email = $1 AND lectures.course_id = $2`,
+      [email, course_id]
+    );
+
+    res.status(200).json(lectures.rows);
+  } catch (error) {
+    console.error('Error fetching lectures:', error);
+    res.status(500).json({ message: 'Server error. Please try again later.' });
+  }
+});
+
+
 // Start server
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
