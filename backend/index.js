@@ -50,21 +50,37 @@ app.get('/', (req, res) => {
 
 // Signup Route
 app.post('/signup', async (req, res) => {
-  const { first_name, last_name, email, password } = req.body;
+    const { first_name, last_name, email, password } = req.body;
 
-  // Hash the password
-  const hashedPassword = await bcrypt.hash(password, 10);
+    try {
+        // console.log(`first name: ${first_name}`);
+        // console.log(`last name: ${last_name}`);
+        // console.log(`email: ${email}`);
+        // console.log(`password: ${password}`);
 
-  try {
-    const result = await pool.query(
-      'INSERT INTO users (first_name, last_name, email, password) VALUES ($1, $2, $3, $4) RETURNING *',
-      [first_name, last_name, email, hashedPassword]
-    );
-    res.status(201).json(result.rows[0]); // Respond with the created user
-  } catch (err) {
-    console.error('Error executing query', err);
-    res.status(500).send('Error signing up');
-  }
+        // Check if the email already exists in the database
+        const existingUser = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+        if (existingUser.rows.length > 0) {
+            return res.status(400).json({ message: 'Email already exists' });
+        }
+
+        // If not, hash the password and insert the new user
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        console.log(`new user insert success. cck0`);
+        const newUser = await pool.query(
+            'INSERT INTO users (first_name, last_name, email, password) VALUES ($1, $2, $3, $4) RETURNING *',
+            [first_name, last_name, email, hashedPassword]
+        );
+        // console.log(`new user insert success. cck1`);
+
+        res.json(newUser.rows[0]); // Send back the newly created user
+        // console.log(`new user insert success. cck2`);
+        
+    } catch (error) {
+        console.error('Error executing query', error);
+        res.status(500).json({ message: 'Server error. Please try again later.' });
+    }
 });
 
 // Login Route
