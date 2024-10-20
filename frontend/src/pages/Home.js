@@ -5,15 +5,21 @@ import '../Styles/Signup.css';
 import '../Styles/Universal.css';
 import Header from '../components/Header';
 import { useNavigate } from 'react-router-dom';
+import { IoReturnUpBack } from "react-icons/io5";
 
 const Home = () => {
+  const navigate = useNavigate();
+
+  const isLoggedIn = !!localStorage.getItem('current_user_email'); 
+  if (!isLoggedIn) {
+    navigate('/Signup'); 
+  }
+
   // State containing courses and their lectures
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [courseName, setCourseName] = useState(""); // Add state to capture course name
-
-  const navigate = useNavigate();
 
   const email = localStorage.getItem('current_user_email'); // Adjust based on how you're storing email
 
@@ -70,28 +76,31 @@ const Home = () => {
     fetchCourses(); // Call the function
   }, []); // Empty dependency array to fetch courses only once when component mounts
 
-  // show a loading indicator
-  if (loading) {
-    return <div>Loading...</div>
-  }
-
   const handleCourseClick = (courseId) => {
-    localStorage.setItem('course_id', courseId); 
+    localStorage.setItem('course_id', courseId);
     navigate('/Lecture');
 
-  }; 
+  };
 
   return (
     <div>
       <Header />
       {/* Courses cards */}
       <div className='p-10 m-10 grid grid-cols-3 gap-4'>
-        {courses.length > 0 ? (
+        {loading ? (
+          // While loading, display empty divs with the glow effect
+          Array.from({ length: 3 }).map((_, index) => (
+            <div key={index} className={`bg-white shadow-lg rounded-lg p-6 glow-effect`}>
+              <h2 className='text-xl font-semibold mb-2'>Loading...</h2>
+              <p className='text-gray-500'>Loading course data...</p>
+            </div>
+          ))
+        ) : courses.length > 0 ? (
           courses.map((course, index) => (
             <div key={index} className='bg-white shadow-lg rounded-lg p-6'>
               <h2 className='text-xl font-semibold mb-2'>{course.course_name}</h2>
               <p className='text-gray-500'>Created on: {new Date(course.created_date).toLocaleDateString()}</p>
-              <div 
+              <div
                 onClick={() => handleCourseClick(course.course_id)}
                 className='text-blue-500 underline'>
                 View Course
@@ -99,7 +108,7 @@ const Home = () => {
             </div>
           ))
         ) : (
-          <div>Add your first course. </div>
+          <div>Add your first course.</div>
         )}
         {/* Add new course card */}
         <div id="add-new"
@@ -108,6 +117,7 @@ const Home = () => {
           <IoIosAddCircle className="text-blue-500 text-6xl group-hover:text-white transition-colors duration-300" />
         </div>
       </div>
+
 
       {/* Modal */}
       {isModalOpen && (

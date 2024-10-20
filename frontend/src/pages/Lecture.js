@@ -5,6 +5,8 @@ import '../Styles/Universal.css';
 import Header from '../components/Header';
 import '../Styles/Lecture.css';
 import TextToSpeech from '../components/TextToSpeech';
+import { useNavigate } from 'react-router-dom';
+
 
 const Lecture = () => {
   const { courseId } = useParams(); // Get the course ID from the URL
@@ -13,6 +15,13 @@ const Lecture = () => {
   const [loading, setLoading] = useState(true);
   const [selectedLecture, setSelectedLecture] = useState(null); // State for the selected lecture to display in modal
   const [lectures, setLectures] = useState([]); // Declare state for lectures
+
+  const navigate = useNavigate(); 
+
+  const isLoggedIn = !!localStorage.getItem('current_user_email'); 
+  if (!isLoggedIn) {
+    navigate('/Signup'); 
+  }
 
   useEffect(() => {
     const email = localStorage.getItem('current_user_email'); // Get email from localStorage

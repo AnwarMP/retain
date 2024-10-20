@@ -83,15 +83,14 @@ const Login = () => {
                         />
                     </div>
                     <div>
-                        <button type="submit" className="w-full p-2 bg-blue-600 text-white transition ease-in-out rounded-lg hover:bg-blue-500">
+                        <button type="submit" className="w-full p-2 bg-blue-600 text-white transition ease-in-out rounded-md hover:bg-blue-500">
                             Log In
                         </button>
                     </div>
-                    <div className="login-link mt-4 text-gray-600">
-                        <Link to="/signup" className='nav-button'>
-                            Don't have an account? <span className='underline decoration-sky-500'>Sign up.</span> 
-                        </Link>
-                    </div>
+                    <p class="mt-5 text-center text-sm text-gray-500">
+                        Did not join us yet? 
+                        <a href='/signup' class="font-semibold leading-6 text-sky-400 hover:text-sky-700 transition ease-in-out"> Sign up today </a>
+                    </p>
                 </form>
             </div>
         </div>
