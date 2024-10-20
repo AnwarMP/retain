@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { IoIosAddCircle } from "react-icons/io";
 import { Link } from 'react-router-dom';
 import '../Styles/Signup.css';
 import '../Styles/Universal.css';
@@ -29,7 +30,6 @@ const Home = () => {
   return (
     <div>
       <Header />
-
       {/* Courses cards */}
       <div className='p-10 m-10 grid grid-cols-3 gap-4'>
         {Object.keys(courses).map((courseKey, index) => {
@@ -44,6 +44,9 @@ const Home = () => {
             </div>
           );
         })}
+        <div id="add-new" className="bg-blue-100 shadow-lg rounded-lg p-6 flex justify-center items-center hover:bg-blue-500 group transition-colors duration-300">
+          <IoIosAddCircle className="text-blue-500 text-6xl group-hover:text-white transition-colors duration-300" />
+        </div>
       </div>
     </div>
   );
