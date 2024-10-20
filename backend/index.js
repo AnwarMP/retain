@@ -2,6 +2,9 @@ const express = require('express');
 const cors = require('cors');
 const { Pool } = require('pg');
 const bcrypt = require('bcrypt');
+const multer = require('multer');
+const AWS = require('aws-sdk');
+const fs = require('fs');
 require('dotenv').config();
 
 const app = express();
@@ -19,6 +22,31 @@ const pool = new Pool({
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+// AWS Configuration
+AWS.config.update({
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID,      
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY, 
+  region: process.env.AWS_REGION,                
+});
+
+const s3 = new AWS.S3(); //AWS S3 Bucket
+
+//Multer Middleware for file uploads
+// Set up storage for multer
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'uploads/'); // Ensure this directory exists and is writable
+  },
+  filename: function (req, file, cb) {
+    // Use a unique filename to prevent overwriting
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, uniqueSuffix + '-' + file.originalname);
+  }
+});
+
+// Initialize multer with the storage configuration
+const upload = multer({ storage: storage }); //used in the Create lecture route to handle file
 
 // Create users table if it does not exist
 const createUsersTable = async () => {
@@ -134,21 +162,75 @@ app.post('/create-course', async (req, res) => {
 });
 
 // Create Lecture Route
-app.post('/create-lecture', async (req, res) => {
-  const { course_id, aws_folder_link, lecture_name, prompt, transcript } = req.body;
+app.post('/create-lecture', upload.single('file'), async (req, res) => {
+  const { course_id, lecture_name, prompt } = req.body;
+  const file = req.file; // Access the uploaded file
+
+  if (!file) {
+    return res.status(400).json({ message: 'No file uploaded' });
+  }
 
   try {
-    // Insert new lecture into the lectures table
-    const newLecture = await pool.query(
-      'INSERT INTO lectures (course_id, aws_folder_link, lecture_name, prompt, transcript) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-      [course_id, aws_folder_link, lecture_name, prompt, transcript]
-    );
-    res.status(201).json(newLecture.rows[0]);
+    // Read the file from the local filesystem
+    const fileContent = fs.readFileSync(file.path);
+
+    // Set up S3 upload parameters
+    const params = {
+      Bucket: 'calhacks24-retain',
+      Key: `lectures/${Date.now()}_${file.originalname}`, // File name to save as in S3
+      Body: fileContent,
+      ContentType: file.mimetype,
+    };
+
+    // Uploading files to S3
+    s3.upload(params, async (err, data) => {
+      if (err) {
+        console.error('Error uploading to S3:', err);
+        return res.status(500).json({ message: 'Failed to upload file to S3' });
+      } else {
+        console.log('File uploaded successfully to S3:', data.Location); //when the file is uploaded to the S3 bucket, AWS S3 responds with a data object that includes several details about the file, including its location (URL).
+
+        // Delete the local file after uploading to S3
+        fs.unlinkSync(file.path);
+
+        // Insert new lecture data into the lectures table
+        try {
+          // Call the RAG service to get the transcript
+          const transcript = await getTranscript(prompt, data.Location);
+
+          const newLecture = await pool.query(
+            'INSERT INTO lectures (course_id, aws_folder_link, lecture_name, prompt, transcript) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+            [course_id, data.Location, lecture_name, prompt, transcript] // Use S3 URL as aws_folder_link
+          );
+
+          res.status(201).json(newLecture.rows[0]);
+        } catch (error) {
+          console.error('Error creating lecture:', error);
+          res.status(500).json({ message: 'Server error. Please try again later.' });
+        }
+      }
+    });
   } catch (error) {
-    console.error('Error creating lecture:', error);
+    console.error('Error processing file:', error);
     res.status(500).json({ message: 'Server error. Please try again later.' });
   }
 });
+
+// **Hardcoded getTranscript Function**
+async function getTranscript(prompt, fileUrl) {
+  console.log(`Generating transcript for prompt: ${prompt} and file URL: ${fileUrl}`);
+  // Return a hardcoded transcript string
+  const transcript = `
+    History is the study of change over time, encompassing various dimensions of human society, including political, social, economic, and cultural developments. Historians focus on understanding how these aspects evolve rather than assuming that "history repeats itself," as non-historians often claim. History is not a static entity but an intellectual discipline, continuously reinterpreted by historians.
+    Historians emphasize the importance of primary sources, materials from the time period being studied, recognizing that these sources contain biases and limitations. They critically analyze these sources to derive a nuanced understanding of the past. Non-historians, in contrast, often rely on media, such as television or movies, and may accept these depictions of history uncritically.
+    A significant difference lies in methodology. Historians meticulously cite their sources through footnotes and bibliographies, helping others trace the origins of their work and verify its accuracy. They understand that interpretations of historical events change over time, a field of study known as historiography.
+    Non-historians often generalize or romanticize the past, while historians focus on detailed and specific developments, avoiding simplistic notions like fixed time periods or inevitable progress. Historians strive for objectivity but acknowledge their own biases and aim to interpret historical events within the context of the time being studied.
+    `;
+  return transcript;
+}
+
+
+
 
 // Get Courses for a User
 app.get('/courses/:email', async (req, res) => {

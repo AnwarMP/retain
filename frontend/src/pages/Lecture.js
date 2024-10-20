@@ -4,13 +4,16 @@ import '../Styles/Signup.css';
 import '../Styles/Universal.css';
 import Header from '../components/Header';
 import '../Styles/Lecture.css';
+import TextToSpeech from '../components/TextToSpeech';
 import { useNavigate } from 'react-router-dom';
+
 
 const Lecture = () => {
   const { courseId } = useParams(); // Get the course ID from the URL
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedFileName, setSelectedFileName] = useState('');
   const [loading, setLoading] = useState(true);
+  const [selectedLecture, setSelectedLecture] = useState(null); // State for the selected lecture to display in modal
   const [lectures, setLectures] = useState([]); // Declare state for lectures
 
   const navigate = useNavigate(); 
@@ -52,27 +55,25 @@ const Lecture = () => {
     e.preventDefault();
 
     const newLectureName = e.target.elements.lectureName.value;
-    const newLectureDate = new Date().toISOString().split('T')[0];
+    const prompt = e.target.elements.prompt.value;
     const uploadedFile = e.target.elements.fileInput.files[0];
-    const awsFolderLink = uploadedFile ? `path/to/aws/${uploadedFile.name}` : ''; // Example path to AWS
 
-    // Create the lecture object
-    const lectureData = {
-      course_id: localStorage.getItem('course_id'),
-      aws_folder_link: awsFolderLink,
-      lecture_name: newLectureName,
-      prompt: '', // Add any prompt data if needed
-      transcript: '' // Add any transcript data if needed
-    };
+    if (!uploadedFile) {
+      alert('Please select a file.');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('course_id', localStorage.getItem('course_id'));
+    formData.append('lecture_name', newLectureName);
+    formData.append('prompt', prompt);
+    formData.append('file', uploadedFile);
 
     // POST request to create a new lecture
     try {
       const response = await fetch('http://localhost:3000/create-lecture', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(lectureData),
+        body: formData,
       });
 
       if (!response.ok) {
@@ -89,6 +90,7 @@ const Lecture = () => {
       setSelectedFileName('');
     } catch (error) {
       console.error('Error creating lecture:', error);
+      alert('error creating lecture');
       // Optionally, show an error message to the user
     }
   };
@@ -109,9 +111,12 @@ const Lecture = () => {
             <div key={lecture.lecture_id} className='bg-white shadow-lg rounded-lg p-6'>
               <h2 className='text-xl font-semibold mb-2'>{lecture.lecture_name}</h2>
               <p className='text-gray-500'>Created on: {new Date(lecture.created_date).toLocaleDateString()}</p>
-              <Link to={`/lecture/${lecture.lecture_id}`} className='text-blue-500 underline'>
-                View Lecture
-              </Link>
+              <button
+                onClick={() => setSelectedLecture(lecture)}
+                className='text-blue-500 underline mt-2'
+              >
+                Listen to Lecture
+              </button>
             </div>
           ))
         ) : (
@@ -147,6 +152,15 @@ const Lecture = () => {
                   required
                 />
               </div>
+              <div className='mb-4'>
+                <input
+                  type='text'
+                  name='prompt'
+                  className='w-full px-3 py-2 border rounded'
+                  placeholder='Prompt'
+                  required
+                />
+              </div>
               <div className='border-2 border-dashed border-gray-300 p-6 mb-6 flex justify-center items-center'>
                 <input
                   type="file"
@@ -179,6 +193,51 @@ const Lecture = () => {
           </div>
         </div>
       )}
+
+
+      {/* Modal for Displaying Lecture Transcript */}
+      {selectedLecture && (
+        <div className='fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50'>
+          <div className='bg-white p-8 rounded shadow-lg max-w-2xl w-full overflow-y-auto max-h-screen'>
+            <div className='flex justify-between items-center mb-4'>
+            <h2 className='text-2xl font-bold'>
+              {selectedLecture.lecture_name}
+              <span className='text-xs text-gray-500 ml-2'>
+                Created on: {new Date(selectedLecture.created_date).toLocaleDateString()}
+              </span>
+            </h2>
+            </div>
+            
+            <h3 className='text-xl font-semibold mb-2'>Your Lecturer</h3>
+            <TextToSpeech text={selectedLecture.transcript} />
+
+            <div className='mb-6'>
+              <h3 className='text-xl font-semibold '>Transcript</h3>
+              <p className='text-gray-800 whitespace-pre-line'>{selectedLecture.transcript}</p>
+            </div>
+            <div className='mb-4'>
+              <a
+                href={selectedLecture.aws_folder_link}
+                target='_blank'
+                rel='noopener noreferrer'
+                className='text-blue-500 underline'
+              >
+                View Source PDF
+              </a>
+            </div>
+            <div className='flex justify-end'>
+              <button
+                onClick={() => setSelectedLecture(null)}
+                className='px-4 py-2 bg-gray-400 text-white rounded'
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+
     </div>
   );
 };
