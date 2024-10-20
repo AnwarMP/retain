@@ -15,10 +15,10 @@ from openai import OpenAI
 app = Flask(__name__)
 
 # Set your OpenAI API key
-api_key = ""
+api_key = "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"
 openai_api_key = api_key
 
-pinecone_api_key = ""
+pinecone_api_key = "724c3281-b7ae-4349-9ae8-743c2e4bee8f"
 
 pc = Pinecone(api_key=pinecone_api_key)
 
@@ -121,4 +121,4 @@ def ask_openai():
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, port=5001)  # or any other port number you prefer
