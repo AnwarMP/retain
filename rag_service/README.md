@@ -8,7 +8,10 @@ poetry --version
 * Navigate to current directory
 
 ```bash 
+poetry env use 3.12.0
 poetry install
+pip install autogen
+pip install xgboost
 poetry shell
 python rag.py
 ```
