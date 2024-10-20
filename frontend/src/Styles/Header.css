@@ -27,3 +27,16 @@
         background-position: 0% 50%;
       }
 }
+
+@keyframes slideDown {
+    0% {
+        transform: translateY(-100%);
+    }
+    100% {
+        transform: translateY(0);
+    }
+}
+
+.animate-slideDown {
+    animation: slideDown 0.5s ease-in-out;
+}

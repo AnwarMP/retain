@@ -24,11 +24,10 @@ app.use(express.json());
 const createUsersTable = async () => {
     const query = `
       CREATE TABLE IF NOT EXISTS users (
-        id SERIAL PRIMARY KEY,
-        first_name VARCHAR(100) NOT NULL,
-        last_name VARCHAR(100) NOT NULL,
-        email VARCHAR(100) UNIQUE NOT NULL,
-        password VARCHAR(255) NOT NULL
+          first_name VARCHAR(100) NOT NULL,
+          last_name VARCHAR(100) NOT NULL,
+          email VARCHAR(100) PRIMARY KEY,  -- Set email as the primary key
+          password VARCHAR(255) NOT NULL
       );
     `;
   
@@ -48,16 +47,11 @@ app.get('/', (req, res) => {
   res.send('Hello, Retain API is running!');
 });
 
-// Signup Route
+// Signup Route -- NEW users table entry. 
 app.post('/signup', async (req, res) => {
     const { first_name, last_name, email, password } = req.body;
 
     try {
-        // console.log(`first name: ${first_name}`);
-        // console.log(`last name: ${last_name}`);
-        // console.log(`email: ${email}`);
-        // console.log(`password: ${password}`);
-
         // Check if the email already exists in the database
         const existingUser = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
         if (existingUser.rows.length > 0) {
@@ -83,7 +77,7 @@ app.post('/signup', async (req, res) => {
     }
 });
 
-// Login Route
+// Login Route -- AUTH user from users table. 
 app.post('/login', async (req, res) => {
   const { email, password } = req.body;
 

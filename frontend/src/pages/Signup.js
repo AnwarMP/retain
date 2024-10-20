@@ -4,14 +4,16 @@ import { Link, useNavigate } from 'react-router-dom';
 const Signup = () => {
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
-    const [email, setEmail] = useState('');
+    const [email, setEmail] = useState(''); // Initialize email state
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [error, setError] = useState('');
-    const navigate = useNavigate(); // For redirecting after signup
+    const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
-        e.preventDefault();
+        // e.preventDefault();
+
+        // Check if passwords match
         if (password !== confirmPassword) {
             setError("Passwords don't match");
             return;
@@ -26,8 +28,8 @@ const Signup = () => {
                 body: JSON.stringify({
                     first_name: firstName,
                     last_name: lastName,
-                    email,
-                    password,
+                    email, 
+                    password: password,
                 }),
             });
 
@@ -35,8 +37,11 @@ const Signup = () => {
                 throw new Error('Error signing up. Please try again.');
             }
 
-            const { email } = await response.json(); // Extract user email from the response
-            localStorage.setItem('current_user_email', email); // Store user email in localStorage
+            const data = await response.json(); // Get response data
+            // const { email: responseEmail } = data; // Extract user email from the response
+
+            // Store email in localStorage
+            localStorage.setItem('current_user_email', data.email); 
             navigate('/home'); // Redirect to home page
         } catch (error) {
             console.error('Signup failed:', error);
@@ -53,7 +58,6 @@ const Signup = () => {
             </div>
             <div className='signup-form'>
                 <form onSubmit={handleSubmit} className="bg-gray-100 p-8 rounded-lg shadow-lg w-72">
-                    {error && <p className="text-red-500">{error}</p>} {/* Display error message */}
                     <div className="field mb-4">
                         <input
                             type="text"
@@ -65,6 +69,7 @@ const Signup = () => {
                             onChange={(e) => setFirstName(e.target.value)}
                         />
                     </div>
+
                     <div className="field mb-4">
                         <input
                             type="text"
@@ -76,9 +81,10 @@ const Signup = () => {
                             onChange={(e) => setLastName(e.target.value)}
                         />
                     </div>
+
                     <div className="field mb-4">
                         <input
-                            type="email"
+                            type="text"
                             name="email"
                             placeholder="School Email"
                             required
@@ -87,6 +93,7 @@ const Signup = () => {
                             onChange={(e) => setEmail(e.target.value)}
                         />
                     </div>
+
                     <div className="field mb-4">
                         <input
                             type="password"
@@ -98,6 +105,7 @@ const Signup = () => {
                             onChange={(e) => setPassword(e.target.value)}
                         />
                     </div>
+
                     <div className="field mb-4">
                         <input
                             type="password"
@@ -109,6 +117,7 @@ const Signup = () => {
                             onChange={(e) => setConfirmPassword(e.target.value)}
                         />
                     </div>
+
                     <div>
                         <button type="submit" className="w-full p-2 bg-blue-600 text-white rounded-md hover:bg-blue-500">
                             Sign Up
@@ -121,6 +130,7 @@ const Signup = () => {
                     </div>
                 </form>
             </div>
+            {error && <p className="text-red-500">{error}</p>} {/* Display error message */}
         </div>
     );
 };
