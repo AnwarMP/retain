@@ -71,13 +71,18 @@ const Signup = () => {
 
     return (
         <div className="flex flex-col items-center mt-10">
+            {showNotification && (
+                <div className="fixed top-0 left-0 right-0 bg-green-500 text-white p-3 text-center animate-slideDown">
+                    Already logged in. Redirecting...
+                </div>
+            )}
             <div className='signup-nav-bar mb-6'>
                 <Link to='/'>
                     <div className='logo text-6xl'>Ret<span className="gradient-text">ai</span>n</div>
                 </Link>
             </div>
-            <div className='signup-form'>
-                <form onSubmit={handleSubmit} className="bg-gray-100 p-8 rounded-lg shadow-lg w-72">
+            <div className='signup-form mt-10 sm:mx-auto sm:w-full sm:max-w-sm'>
+                <form onSubmit={handleSubmit} className="bg-gray-100 rounded-lg w-72">
                     <div className="field mb-4">
                         <input
                             type="text"
@@ -89,7 +94,6 @@ const Signup = () => {
                             onChange={(e) => setFirstName(e.target.value)}
                         />
                     </div>
-
                     <div className="field mb-4">
                         <input
                             type="text"
@@ -139,15 +143,14 @@ const Signup = () => {
                     </div>
 
                     <div>
-                        <button type="submit" className="w-full p-2 bg-blue-600 text-white rounded-md hover:bg-blue-500">
+                        <button type="submit" className="w-full p-2 bg-blue-600 text-white rounded hover:bg-blue-500 transition ease-in-out">
                             Sign Up
                         </button>
                     </div>
-                    <div className="login-link mt-4 text-gray-600">
-                        <Link to="/login" className='nav-button'>
-                            Already have an account? <span className='underline decoration-sky-500'> Log in. </span>
-                        </Link>
-                    </div>
+                    <p class="mt-5 text-center text-sm text-gray-500">
+                        Already have an account?
+                        <a href='/login' class="font-semibold leading-6 text-sky-400 hover:text-sky-700 transition ease-in-out"> Log In</a>
+                    </p>
                 </form>
             </div>
             {error && <p className="text-red-500">{error}</p>} {/* Display error message */}
