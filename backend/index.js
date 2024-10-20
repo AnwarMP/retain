@@ -195,9 +195,12 @@ app.post('/create-lecture', upload.single('file'), async (req, res) => {
 
         // Insert new lecture data into the lectures table
         try {
+          // Call the RAG service to get the transcript
+          const transcript = await getTranscript(prompt, data.Location);
+
           const newLecture = await pool.query(
             'INSERT INTO lectures (course_id, aws_folder_link, lecture_name, prompt, transcript) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-            [course_id, data.Location, lecture_name, prompt, ''] // Use S3 URL as aws_folder_link
+            [course_id, data.Location, lecture_name, prompt, transcript] // Use S3 URL as aws_folder_link
           );
 
           res.status(201).json(newLecture.rows[0]);
@@ -212,6 +215,22 @@ app.post('/create-lecture', upload.single('file'), async (req, res) => {
     res.status(500).json({ message: 'Server error. Please try again later.' });
   }
 });
+
+// **Hardcoded getTranscript Function**
+async function getTranscript(prompt, fileUrl) {
+  console.log(`Generating transcript for prompt: ${prompt} and file URL: ${fileUrl}`);
+  // Return a hardcoded transcript string
+  const transcript = `
+    History is the study of change over time, encompassing various dimensions of human society, including political, social, economic, and cultural developments. Historians focus on understanding how these aspects evolve rather than assuming that "history repeats itself," as non-historians often claim. History is not a static entity but an intellectual discipline, continuously reinterpreted by historians.
+    Historians emphasize the importance of primary sources, materials from the time period being studied, recognizing that these sources contain biases and limitations. They critically analyze these sources to derive a nuanced understanding of the past. Non-historians, in contrast, often rely on media, such as television or movies, and may accept these depictions of history uncritically.
+    A significant difference lies in methodology. Historians meticulously cite their sources through footnotes and bibliographies, helping others trace the origins of their work and verify its accuracy. They understand that interpretations of historical events change over time, a field of study known as historiography.
+    Non-historians often generalize or romanticize the past, while historians focus on detailed and specific developments, avoiding simplistic notions like fixed time periods or inevitable progress. Historians strive for objectivity but acknowledge their own biases and aim to interpret historical events within the context of the time being studied.
+    `;
+  return transcript;
+}
+
+
+
 
 // Get Courses for a User
 app.get('/courses/:email', async (req, res) => {
