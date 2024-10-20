@@ -1,0 +1,25 @@
+[tool.poetry]
+name = "simple-rag-flask"
+version = "0.1.0"
+description = ""
+authors = ["Anwar Mujeeb <ibnmujeeb2003@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.12,<=3.13"
+flask = "^3.0.3"
+openai = "^1.52.0"
+requests = "^2.32.3"
+langchain = "^0.3.4"
+singlestoredb = "^1.7.2"
+pandas = "^2.2.3"
+langchain-community = "^0.3.3"
+pypdf = "^5.0.1"
+chroma = "^0.2.0"
+pinecone-client = "^3.1.0"
+tiktoken = "^0.8.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
