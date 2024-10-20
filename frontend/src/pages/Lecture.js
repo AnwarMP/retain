@@ -44,27 +44,25 @@ const Lecture = () => {
     e.preventDefault();
 
     const newLectureName = e.target.elements.lectureName.value;
-    const newLectureDate = new Date().toISOString().split('T')[0];
+    const prompt = e.target.elements.prompt.value;
     const uploadedFile = e.target.elements.fileInput.files[0];
-    const awsFolderLink = uploadedFile ? `path/to/aws/${uploadedFile.name}` : ''; // Example path to AWS
 
-    // Create the lecture object
-    const lectureData = {
-      course_id: localStorage.getItem('course_id'),
-      aws_folder_link: awsFolderLink,
-      lecture_name: newLectureName,
-      prompt: '', // Add any prompt data if needed
-      transcript: '' // Add any transcript data if needed
-    };
+    if (!uploadedFile) {
+      alert('Please select a file.');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('course_id', localStorage.getItem('course_id'));
+    formData.append('lecture_name', newLectureName);
+    formData.append('prompt', prompt);
+    formData.append('file', uploadedFile);
 
     // POST request to create a new lecture
     try {
       const response = await fetch('http://localhost:3000/create-lecture', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(lectureData),
+        body: formData,
       });
 
       if (!response.ok) {
@@ -81,6 +79,7 @@ const Lecture = () => {
       setSelectedFileName('');
     } catch (error) {
       console.error('Error creating lecture:', error);
+      alert('error creating lecture');
       // Optionally, show an error message to the user
     }
   };
@@ -136,6 +135,15 @@ const Lecture = () => {
                   name='lectureName'
                   className='w-full px-3 py-2 border rounded'
                   placeholder='Lecture name'
+                  required
+                />
+              </div>
+              <div className='mb-4'>
+                <input
+                  type='text'
+                  name='prompt'
+                  className='w-full px-3 py-2 border rounded'
+                  placeholder='Prompt'
                   required
                 />
               </div>

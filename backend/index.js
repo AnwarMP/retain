@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const { Pool } = require('pg');
 const bcrypt = require('bcrypt');
+const multer = require('multer');
 require('dotenv').config();
 
 const app = express();
@@ -19,6 +20,22 @@ const pool = new Pool({
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+//Multer Middleware for file uploads
+// Set up storage for multer
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'uploads/'); // Ensure this directory exists and is writable
+  },
+  filename: function (req, file, cb) {
+    // Use a unique filename to prevent overwriting
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, uniqueSuffix + '-' + file.originalname);
+  }
+});
+
+// Initialize multer with the storage configuration
+const upload = multer({ storage: storage }); //used in the Create lecture route to handle file
 
 // Create users table if it does not exist
 const createUsersTable = async () => {
@@ -134,15 +151,27 @@ app.post('/create-course', async (req, res) => {
 });
 
 // Create Lecture Route
-app.post('/create-lecture', async (req, res) => {
-  const { course_id, aws_folder_link, lecture_name, prompt, transcript } = req.body;
+app.post('/create-lecture', upload.single('file'), async (req, res) => {
+  const { course_id, lecture_name, prompt } = req.body;
+  const file = req.file; // Access the uploaded file
+
+  if (!file) {
+    return res.status(400).json({ message: 'No file uploaded' });
+  }
 
   try {
+    // If you plan to upload the file to AWS S3, you can do it here
+    // For now, let's assume you store the file path in aws_folder_link
+
+    // Get the file path or URL, get local file path for now
+    const aws_folder_link = file.path; // Or the S3 URL if uploaded to S3
+
     // Insert new lecture into the lectures table
     const newLecture = await pool.query(
       'INSERT INTO lectures (course_id, aws_folder_link, lecture_name, prompt, transcript) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-      [course_id, aws_folder_link, lecture_name, prompt, transcript]
+      [course_id, aws_folder_link, lecture_name, prompt, ''] // Assuming transcript is empty for now
     );
+
     res.status(201).json(newLecture.rows[0]);
   } catch (error) {
     console.error('Error creating lecture:', error);
