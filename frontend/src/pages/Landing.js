@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import '../Styles/Landing.css';
 import '../Styles/Universal.css';
+import TextToSpeech from '../components/TextToSpeech';
 
 const Landing = () => {
     return (
@@ -20,6 +21,7 @@ const Landing = () => {
             <button>Try Retain</button>
           </Link>
         </div>
+        <TextToSpeech></TextToSpeech>
       </body>
     );
   };
