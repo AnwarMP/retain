@@ -4,6 +4,7 @@ import '../Styles/Signup.css';
 import '../Styles/Universal.css';
 import Header from '../components/Header';
 import '../Styles/Lecture.css';
+import TextToSpeech from '../components/TextToSpeech';
 
 const Lecture = () => {
   const { courseId } = useParams(); // Get the course ID from the URL
@@ -190,19 +191,19 @@ const Lecture = () => {
         <div className='fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50'>
           <div className='bg-white p-8 rounded shadow-lg max-w-2xl w-full overflow-y-auto max-h-screen'>
             <div className='flex justify-between items-center mb-4'>
-              <h2 className='text-2xl font-bold'>{selectedLecture.lecture_name}</h2>
-              <button
-                onClick={() => setSelectedLecture(null)}
-                className='text-gray-600 hover:text-gray-800'
-              >
-                &#x2715;
-              </button>
+            <h2 className='text-2xl font-bold'>
+              {selectedLecture.lecture_name}
+              <span className='text-xs text-gray-500 ml-2'>
+                Created on: {new Date(selectedLecture.created_date).toLocaleDateString()}
+              </span>
+            </h2>
             </div>
-            <p className='text-gray-500 mb-4'>
-              Created on: {new Date(selectedLecture.created_date).toLocaleDateString()}
-            </p>
+            
+            <h3 className='text-xl font-semibold mb-2'>Your Lecturer</h3>
+            <TextToSpeech text={selectedLecture.transcript} />
+
             <div className='mb-6'>
-              <h3 className='text-xl font-semibold mb-2'>Transcript</h3>
+              <h3 className='text-xl font-semibold '>Transcript</h3>
               <p className='text-gray-800 whitespace-pre-line'>{selectedLecture.transcript}</p>
             </div>
             <div className='mb-4'>
@@ -218,7 +219,7 @@ const Lecture = () => {
             <div className='flex justify-end'>
               <button
                 onClick={() => setSelectedLecture(null)}
-                className='px-4 py-2 bg-blue-500 text-white rounded'
+                className='px-4 py-2 bg-gray-400 text-white rounded'
               >
                 Close
               </button>
