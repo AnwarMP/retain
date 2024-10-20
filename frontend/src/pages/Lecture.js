@@ -10,6 +10,7 @@ const Lecture = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedFileName, setSelectedFileName] = useState('');
   const [loading, setLoading] = useState(true);
+  const [selectedLecture, setSelectedLecture] = useState(null); // State for the selected lecture to display in modal
   const [lectures, setLectures] = useState([]); // Declare state for lectures
 
   useEffect(() => {
@@ -100,9 +101,12 @@ const Lecture = () => {
             <div key={lecture.lecture_id} className='bg-white shadow-lg rounded-lg p-6'>
               <h2 className='text-xl font-semibold mb-2'>{lecture.lecture_name}</h2>
               <p className='text-gray-500'>Created on: {new Date(lecture.created_date).toLocaleDateString()}</p>
-              <Link to={`/lecture/${lecture.lecture_id}`} className='text-blue-500 underline'>
-                View Lecture
-              </Link>
+              <button
+                onClick={() => setSelectedLecture(lecture)}
+                className='text-blue-500 underline mt-2'
+              >
+                Listen to Lecture
+              </button>
             </div>
           ))
         ) : (
@@ -179,6 +183,51 @@ const Lecture = () => {
           </div>
         </div>
       )}
+
+
+      {/* Modal for Displaying Lecture Transcript */}
+      {selectedLecture && (
+        <div className='fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50'>
+          <div className='bg-white p-8 rounded shadow-lg max-w-2xl w-full overflow-y-auto max-h-screen'>
+            <div className='flex justify-between items-center mb-4'>
+              <h2 className='text-2xl font-bold'>{selectedLecture.lecture_name}</h2>
+              <button
+                onClick={() => setSelectedLecture(null)}
+                className='text-gray-600 hover:text-gray-800'
+              >
+                &#x2715;
+              </button>
+            </div>
+            <p className='text-gray-500 mb-4'>
+              Created on: {new Date(selectedLecture.created_date).toLocaleDateString()}
+            </p>
+            <div className='mb-6'>
+              <h3 className='text-xl font-semibold mb-2'>Transcript</h3>
+              <p className='text-gray-800 whitespace-pre-line'>{selectedLecture.transcript}</p>
+            </div>
+            <div className='mb-4'>
+              <a
+                href={selectedLecture.aws_folder_link}
+                target='_blank'
+                rel='noopener noreferrer'
+                className='text-blue-500 underline'
+              >
+                View Source PDF
+              </a>
+            </div>
+            <div className='flex justify-end'>
+              <button
+                onClick={() => setSelectedLecture(null)}
+                className='px-4 py-2 bg-blue-500 text-white rounded'
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+
     </div>
   );
 };
